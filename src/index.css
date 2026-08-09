@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SkillUp design system - warm, premium, bold */
+@layer base {
+  :root {
+    --background: 36 27% 95%;        /* #F7F4EF warm off-white */
+    --background-alt: 36 18% 91%;    /* #EDEAE4 warm light gray */
+    --foreground: 0 0% 10%;          /* #1A1A1A near-black */
+    --body: 0 0% 36%;                /* #5C5C5C warm gray */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 16 100% 60%;          /* #FF6B35 vibrant orange */
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 16 100% 96%;
+
+    --secondary: 36 18% 91%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 36 18% 91%;
+    --muted-foreground: 0 0% 36%;
+
+    --accent: 16 100% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 36 12% 86%;
+    --input: 36 12% 86%;
+    --ring: 16 100% 60%;
+
+    --radius: 0.875rem;
+
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --shadow-card-hover: 0 8px 32px rgba(255, 107, 53, 0.12);
+    --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.04);
+
+    --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+    --sidebar-background: 36 27% 95%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 16 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 36 18% 91%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 36 12% 86%;
+    --sidebar-ring: 16 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  h1, h2, h3, h4 {
+    @apply text-foreground tracking-tight;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .font-serif {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  .grain-bg {
+    position: relative;
+  }
+  .grain-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--grain);
+    opacity: 0.5;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 0;
+  }
+  .grain-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-soft {
+    @apply bg-card rounded-2xl transition-all duration-300;
+    box-shadow: var(--shadow-card);
+  }
+  .card-soft:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: hsl(var(--primary));
+  }
+}
