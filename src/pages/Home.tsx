@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Users, BookOpen, Star, GraduationCap, ArrowRight, Code2, Palette, TrendingUp, Briefcase, Brain, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +53,8 @@ const categories = [
 ];
 
 export default function Home() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col">
       {/* ─── Hero ─── */}
@@ -59,13 +62,11 @@ export default function Home() {
         <div className="mx-auto max-w-5xl relative">
 
           <h1 className="max-w-4xl font-serif text-6xl font-bold tracking-tight text-foreground sm:text-7xl md:text-8xl lg:text-9xl leading-[1.05]">
-            Learn the skills that move{" "}
-            <span className="text-primary italic">careers</span>{" "}
-            forward.
+            {t('hero.title')}
           </h1>
 
           <p className="mt-8 max-w-2xl text-xl text-muted-foreground leading-relaxed">
-            Premium, no-fluff courses taught by operators from the teams you admire. Build real momentum in weeks, not years.
+            {t('hero.subtitle')}
           </p>
 
           <div className="mt-12 flex flex-wrap items-center gap-4">
@@ -73,13 +74,13 @@ export default function Home() {
               to="/courses"
               className="inline-flex h-12 items-center justify-center rounded-full bg-foreground px-8 text-base font-medium text-background shadow-lg transition-all hover:bg-foreground/90 hover:shadow-xl hover:-translate-y-0.5"
             >
-              Browse Courses
+              {t('hero.cta1')}
             </Link>
             <Link
               to="/about"
               className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-transparent px-8 text-base font-medium text-foreground transition-colors hover:bg-foreground/5"
             >
-              Learn More
+              {t('hero.cta2')}
             </Link>
           </div>
 

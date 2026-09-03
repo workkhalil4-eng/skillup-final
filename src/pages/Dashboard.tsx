@@ -82,8 +82,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: BookOpen, label: "Courses Enrolled", value: enrollments.length.toString(), color: "text-blue-500" },
-          { icon: CheckCircle2, label: "Lessons Completed", value: "24", color: "text-green-500" }, // Mocked for now
-          { icon: Trophy, label: "Achievements", value: "2 / 6", color: "text-yellow-500" }, // Mocked for now
+          { icon: CheckCircle2, label: "Lessons Completed", value: enrollments.reduce((acc, curr) => acc + Math.round((curr.progress || 0) / 10), 0).toString(), color: "text-green-500" },
+          { icon: Trophy, label: "Achievements", value: `${achievements.filter(a => a.unlocked).length} / ${achievements.length}`, color: "text-yellow-500" },
           { icon: TrendingUp, label: "Avg. Progress", value: `${avgProgress}%`, color: "text-primary" },
         ].map(({ icon: Icon, label, value, color }) => (
           <Card key={label} className="border-border bg-card">

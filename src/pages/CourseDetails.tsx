@@ -48,13 +48,18 @@ export default function CourseDetails() {
               <span className="text-background/60">•</span>
               <span>Taught by <span className="font-bold">{course.instructor.name}</span></span>
             </div>
-            <div className="flex items-center gap-4">
-              <Button size="lg" className="h-14 px-8 text-lg rounded-full">
-                Enroll Now - ${course.price}
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full bg-transparent border-background/20 text-background hover:bg-background/10">
-                Add to Wishlist
-              </Button>
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <Button size="lg" disabled className="h-14 px-8 text-lg rounded-full opacity-60 cursor-not-allowed">
+                  Enroll Now - ${course.price}
+                </Button>
+                <Button size="lg" disabled variant="outline" className="h-14 px-8 text-lg rounded-full bg-transparent border-background/20 text-background opacity-60 cursor-not-allowed">
+                  Add to Wishlist
+                </Button>
+              </div>
+              <p className="text-xs text-background/60">
+                Note: Enrollment and checkout are disabled in this illustrative portfolio preview.
+              </p>
             </div>
           </div>
           <div className="relative">

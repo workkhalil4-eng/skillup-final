@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { BookOpen, MessageCircle, Code, Rss } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-foreground text-background mt-24">
       <div className="container py-16">
@@ -28,7 +31,12 @@ export default function Footer() {
           <div>
             <h4 className="font-bold uppercase tracking-wider text-sm mb-4 text-background/50">Platform</h4>
             <ul className="space-y-3">
-              {[["Courses", "/courses"], ["Instructors", "/instructors"], ["Pricing", "/pricing"], ["About", "/about"]].map(([name, path]) => (
+              {[
+                [t('nav.courses'), "/courses"],
+                [t('nav.instructors'), "/instructors"],
+                [t('nav.pricing'), "/pricing"],
+                [t('nav.about'), "/about"]
+              ].map(([name, path]) => (
                 <li key={path}><Link to={path} className="text-background/70 hover:text-background transition-colors">{name}</Link></li>
               ))}
             </ul>
@@ -37,7 +45,11 @@ export default function Footer() {
           <div>
             <h4 className="font-bold uppercase tracking-wider text-sm mb-4 text-background/50">Support</h4>
             <ul className="space-y-3">
-              {[["Contact", "/contact"], ["Login", "/login"], ["Sign Up", "/register"]].map(([name, path]) => (
+              {[
+                [t('nav.contact'), "/contact"],
+                [t('nav.login'), "/login"],
+                [t('nav.signup'), "/register"]
+              ].map(([name, path]) => (
                 <li key={path}><Link to={path} className="text-background/70 hover:text-background transition-colors">{name}</Link></li>
               ))}
             </ul>
