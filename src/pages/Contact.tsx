@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
+  subject: z.string().min(5, "Subject must be at least 5 characters"),
   message: z.string().min(10, "Message must be at least 10 characters").max(1000, "Message is too long"),
 });
 
@@ -19,26 +21,38 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       name: "",
       email: "",
+      subject: "",
       message: "",
     },
   });
 
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
+    setError(null);
     try {
-      // Mocking edge function call / rate limiting delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Form data:", data);
+      const { error: insertError } = await supabase
+        .from('messages')
+        .insert([{
+          name: data.name,
+          email: data.email,
+          subject: data.subject,
+          message: data.message
+        }]);
+      
+      if (insertError) throw insertError;
+      
       setIsSuccess(true);
       form.reset();
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      console.error("Submission error:", err);
+      setError("Failed to send message. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -96,6 +110,12 @@ export default function Contact() {
         <div className="bg-card border border-border p-8 rounded-3xl">
           <h2 className="text-3xl font-serif font-bold mb-6">Send a Message</h2>
           
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+
           {isSuccess ? (
             <div className="bg-green-500/10 text-green-600 p-6 rounded-2xl border border-green-500/20 text-center">
               <h3 className="font-bold text-lg mb-2">Message Sent!</h3>
@@ -105,28 +125,44 @@ export default function Contact() {
           ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} className="bg-background" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="john@example.com" type="email" {...field} className="bg-background" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Subject</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} className="bg-background" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="john@example.com" type="email" {...field} className="bg-background" />
+                        <Input placeholder="How can we help you?" {...field} className="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -141,7 +177,7 @@ export default function Contact() {
                       <FormLabel>Message</FormLabel>
                       <FormControl>
                         <textarea
-                          placeholder="How can we help you?"
+                          placeholder="Please provide details..."
                           className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           {...field}
                         />

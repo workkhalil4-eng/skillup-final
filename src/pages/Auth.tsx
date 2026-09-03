@@ -1,51 +1,67 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { supabase } from "@/lib/supabase";
-
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function Auth({ type = "login" }: { type?: "login" | "register" }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { session } = useAuth();
+const authSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  fullName: z.string().optional(),
+});
 
-  // If user is already logged in, redirect to dashboard
+type AuthFormValues = z.infer<typeof authSchema>;
+
+export default function Auth({ type = "login" }: { type?: "login" | "register" }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const { session } = useAuth();
+  const isLogin = type === "login";
+
+  const form = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      fullName: "",
+    },
+  });
+
   if (session) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const isLogin = type === "login";
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: AuthFormValues) => {
     setIsLoading(true);
+    setAuthError(null);
     
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: data.email,
+          password: data.password,
         });
         if (error) throw error;
-        // The AuthContext will pick up the session and we can redirect
-        // For now, let's just log success
-        console.log("Logged in successfully");
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: data.email,
+          password: data.password,
+          options: {
+            data: {
+              full_name: data.fullName,
+            }
+          }
         });
         if (error) throw error;
-        console.log("Registered successfully! Check your email.");
       }
     } catch (error: any) {
       console.error(error.message);
-      alert(error.message);
+      setAuthError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -61,47 +77,71 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
           <p className="text-sm text-muted-foreground">
             {isLogin 
               ? "Enter your email to sign in to your account" 
-              : "Enter your email below to create your account"}
+              : "Enter your details below to create your account"}
           </p>
         </div>
 
         <div className="grid gap-6">
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  placeholder="name@example.com"
-                  type="email"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  autoCorrect="off"
-                  disabled={isLoading}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {authError && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                  {authError}
+                </div>
+              )}
+              
+              {!isLogin && (
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  disabled={isLoading}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button disabled={isLoading}>
+              )}
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="name@example.com" type="email" autoCapitalize="none" autoCorrect="off" disabled={isLoading} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" disabled={isLoading} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && (
                   <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 )}
                 {isLogin ? "Sign In" : "Sign Up"}
               </Button>
-            </div>
-          </form>
+            </form>
+          </Form>
         </div>
 
         <p className="px-8 text-center text-sm text-muted-foreground">

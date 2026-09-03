@@ -52,7 +52,10 @@ export default function Pricing() {
     <div className="container py-12 md:py-24">
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h1 className="text-5xl md:text-6xl font-serif font-bold mb-6">Simple, transparent pricing</h1>
-        <p className="text-xl text-muted-foreground">Invest in your career with our flexible plans. No hidden fees, cancel anytime.</p>
+        <p className="text-xl text-muted-foreground mb-4">Invest in your career with our flexible plans. No hidden fees, cancel anytime.</p>
+        <div className="inline-flex items-center justify-center p-3 rounded-lg bg-primary/10 text-primary border border-primary/20">
+          <p className="text-sm font-medium">Note: This is an illustrative portfolio project. Payments are disabled.</p>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
@@ -87,9 +90,11 @@ export default function Pricing() {
             </CardContent>
             <CardFooter>
               <Button 
-                className="w-full" 
+                className="w-full opacity-50 cursor-not-allowed" 
                 variant={plan.isPopular ? "default" : "outline"}
                 size="lg"
+                disabled
+                title="Payments are disabled for this illustrative project."
               >
                 {plan.buttonText}
               </Button>

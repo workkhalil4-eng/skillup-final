@@ -1,24 +1,31 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Courses", path: "/courses" },
-    { name: "Instructors", path: "/instructors" },
-    { name: "Pricing", path: "/pricing" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: t('nav.home'), path: "/" },
+    { name: t('nav.courses'), path: "/courses" },
+    { name: t('nav.instructors'), path: "/instructors" },
+    { name: t('nav.pricing'), path: "/pricing" },
+    { name: t('nav.about'), path: "/about" },
+    { name: t('nav.contact'), path: "/contact" },
   ];
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'ar' : 'en';
+    i18n.changeLanguage(newLang);
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-background border-b border-transparent">
@@ -57,27 +64,35 @@ export default function Navbar() {
 
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-4">
+          <button onClick={toggleLanguage} className="p-2 text-foreground/80 hover:text-foreground transition-colors" title="Toggle Language">
+            <Globe className="h-5 w-5" />
+          </button>
           <Link
             to="/login"
             className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
           >
-            Login
+            {t('nav.login')}
           </Link>
           <Link
             to="/register"
             className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
-            Sign Up
+            {t('nav.signup')}
           </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button
-          className="md:hidden flex items-center z-50 p-2 text-foreground"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="md:hidden flex items-center z-50 gap-2">
+          <button onClick={toggleLanguage} className="p-2 text-foreground">
+            <Globe className="h-5 w-5" />
+          </button>
+          <button
+            className="p-2 text-foreground"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -104,13 +119,13 @@ export default function Navbar() {
               to="/login"
               className="text-lg font-medium text-foreground hover:text-primary"
             >
-              Login
+              {t('nav.login')}
             </Link>
             <Link
               to="/register"
               className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-lg font-semibold text-primary-foreground shadow"
             >
-              Sign Up
+              {t('nav.signup')}
             </Link>
           </div>
         </div>

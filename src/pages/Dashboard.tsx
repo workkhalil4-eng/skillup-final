@@ -1,14 +1,18 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Clock, Trophy, TrendingUp, ArrowRight, CheckCircle2, Lock } from "lucide-react";
+import { BookOpen, Trophy, TrendingUp, CheckCircle2, Lock, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
-const enrolledCourses = [
-  { slug: "advanced-product-design", title: "Advanced Product Design Strategy", progress: 65, category: "Design" },
-  { slug: "fullstack-nextjs", title: "Full-Stack Next.js Mastery", progress: 30, category: "Development" },
-  { slug: "marketing-analytics", title: "Marketing Analytics for Startups", progress: 10, category: "Marketing" },
-];
-
-const recentCourses = enrolledCourses.slice(0, 3);
+interface EnrolledCourse {
+  course_id: string;
+  progress: number;
+  courses: {
+    title: string;
+    level: string;
+  };
+}
 
 const achievements = [
   { icon: "🚀", title: "First Course", desc: "Enrolled in your first course", unlocked: true },
@@ -20,21 +24,67 @@ const achievements = [
 ];
 
 export default function Dashboard() {
+  const { profile, user } = useAuth();
+  const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchEnrollments() {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from('enrollments')
+          .select(`
+            course_id,
+            progress,
+            courses (
+              title,
+              level
+            )
+          `)
+          .eq('student_id', user.id)
+          .order('enrolled_at', { ascending: false });
+
+        if (error) throw error;
+        if (data) setEnrollments(data as unknown as EnrolledCourse[]);
+      } catch (err) {
+        console.error("Error fetching enrollments:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchEnrollments();
+  }, [user]);
+
+  const firstName = profile?.full_name?.split(' ')[0] || 'Student';
+  const avgProgress = enrollments.length > 0 
+    ? Math.round(enrollments.reduce((acc, curr) => acc + curr.progress, 0) / enrollments.length) 
+    : 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome */}
       <div>
-        <h2 className="text-3xl font-serif font-bold mb-1">Good morning, John! 👋</h2>
-        <p className="text-muted-foreground">You have 3 courses in progress. Keep going!</p>
+        <h2 className="text-3xl font-serif font-bold mb-1">Good morning, {firstName}! 👋</h2>
+        <p className="text-muted-foreground">You have {enrollments.length} courses in progress. Keep going!</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: BookOpen, label: "Courses Enrolled", value: "3", color: "text-blue-500" },
-          { icon: CheckCircle2, label: "Lessons Completed", value: "24", color: "text-green-500" },
-          { icon: Trophy, label: "Achievements", value: "2 / 6", color: "text-yellow-500" },
-          { icon: TrendingUp, label: "Avg. Progress", value: "35%", color: "text-primary" },
+          { icon: BookOpen, label: "Courses Enrolled", value: enrollments.length.toString(), color: "text-blue-500" },
+          { icon: CheckCircle2, label: "Lessons Completed", value: "24", color: "text-green-500" }, // Mocked for now
+          { icon: Trophy, label: "Achievements", value: "2 / 6", color: "text-yellow-500" }, // Mocked for now
+          { icon: TrendingUp, label: "Avg. Progress", value: `${avgProgress}%`, color: "text-primary" },
         ].map(({ icon: Icon, label, value, color }) => (
           <Card key={label} className="border-border bg-card">
             <CardContent className="p-5 flex items-center gap-4">
@@ -55,33 +105,37 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-serif font-bold">My Courses</h3>
-            <Link to="/dashboard/courses" className="text-sm text-primary hover:underline flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
           </div>
-          {enrolledCourses.map((course) => (
-            <Card key={course.slug} className="border-border bg-card">
+          {enrollments.length === 0 ? (
+             <Card className="border-border bg-card">
+               <CardContent className="p-8 text-center">
+                 <p className="text-muted-foreground mb-4">You haven't enrolled in any courses yet.</p>
+                 <Link to="/courses" className="text-primary font-medium hover:underline">Browse Courses</Link>
+               </CardContent>
+             </Card>
+          ) : enrollments.map((enrollment) => (
+            <Card key={enrollment.course_id} className="border-border bg-card">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
-                    <span className="text-xs font-medium bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{course.category}</span>
-                    <h4 className="font-semibold mt-2 line-clamp-1">{course.title}</h4>
+                    <span className="text-xs font-medium bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{enrollment.courses?.level || 'Beginner'}</span>
+                    <h4 className="font-semibold mt-2 line-clamp-1">{enrollment.courses?.title || 'Unknown Course'}</h4>
                   </div>
-                  <span className="text-sm font-bold text-primary whitespace-nowrap">{course.progress}%</span>
+                  <span className="text-sm font-bold text-primary whitespace-nowrap">{enrollment.progress}%</span>
                 </div>
                 {/* Progress Bar */}
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${course.progress}%` }}
+                    style={{ width: `${enrollment.progress}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-xs text-muted-foreground">
-                    {Math.round((course.progress / 100) * 6)} / 6 lessons
+                    In progress
                   </span>
                   <Link
-                    to={`/courses/${course.slug}`}
+                    to={`/courses/${enrollment.course_id}`}
                     className="text-xs font-medium text-primary hover:underline"
                   >
                     Continue →
@@ -94,29 +148,6 @@ export default function Dashboard() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          {/* Recently Viewed */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Recently Viewed</h3>
-            </div>
-            <div className="space-y-3">
-              {recentCourses.map((c) => (
-                <Link
-                  key={c.slug}
-                  to={`/courses/${c.slug}`}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors"
-                >
-                  <div className="h-10 w-10 rounded-lg bg-muted border border-border shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium line-clamp-1">{c.title}</p>
-                    <p className="text-xs text-muted-foreground">{c.progress}% complete</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
           {/* Achievements */}
           <Card className="border-border bg-card">
             <CardHeader className="pb-3">
@@ -143,26 +174,6 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Deadlines */}
-          <Card className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Upcoming Deadlines</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                { task: "Final Project - Product Design", date: "Aug 5, 2025", late: false },
-                { task: "Quiz – Analytics Basics", date: "Jul 30, 2025", late: true },
-              ].map((d) => (
-                <div key={d.task} className="flex items-start justify-between gap-2">
-                  <p className="text-sm line-clamp-2">{d.task}</p>
-                  <span className={`text-xs shrink-0 font-medium px-2 py-0.5 rounded-full ${d.late ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"}`}>
-                    {d.date}
-                  </span>
-                </div>
-              ))}
             </CardContent>
           </Card>
         </div>
