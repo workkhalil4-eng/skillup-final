@@ -100,7 +100,7 @@ export default function Home() {
       {/* ─── Hero ─── */}
       <section className="relative px-6 pt-12 pb-24 md:pt-20 md:pb-32 lg:px-8 overflow-hidden grain-bg bg-background-alt">
         <div className="mx-auto max-w-5xl relative">
-          <h1 className="max-w-4xl font-serif text-6xl font-bold tracking-tight text-foreground sm:text-7xl md:text-8xl lg:text-9xl leading-[1.05]">
+          <h1 className="max-w-4xl font-serif text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight text-foreground leading-[1.05]">
             {t("hero.title")}
           </h1>
 
@@ -276,8 +276,8 @@ export default function Home() {
 
       {/* ─── Certificate CTA ─── */}
       <section className="py-24 container">
-        <div className="relative overflow-hidden bg-foreground text-background rounded-3xl p-12 md:p-16">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+        <div className="relative overflow-hidden bg-foreground text-background rounded-3xl p-8 md:p-16">
+          <div className="absolute top-0 end-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
           <div className="relative max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-primary/20 text-primary rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
               <Star className="h-4 w-4 fill-primary" aria-hidden="true" />

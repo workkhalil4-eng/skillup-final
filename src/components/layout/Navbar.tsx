@@ -148,16 +148,16 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu Toggle */}
-        <div className="md:hidden flex items-center z-50 gap-2">
+        <div className="md:hidden flex items-center z-50 gap-1">
           <button
             onClick={toggleLanguage}
-            className="p-2 text-foreground"
+            className="p-3 text-foreground"
             aria-label={i18n.language === "en" ? "Switch to Arabic" : "Switch to English"}
           >
             <Globe className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
-            className="p-2 text-foreground"
+            className="p-3 text-foreground"
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
@@ -169,7 +169,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 top-20 z-40 bg-background md:hidden flex flex-col p-6 animate-in slide-in-from-top-4 fade-in duration-200">
+        <div className="fixed inset-0 top-20 z-40 bg-background md:hidden flex flex-col p-6 overflow-y-auto animate-in slide-in-from-top-4 fade-in duration-200">
           <div className="flex flex-col gap-6">
             {navLinks.map((link) => {
               const isActive =

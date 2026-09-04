@@ -98,12 +98,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-serif font-bold">Admin Dashboard</h2>
           <p className="text-muted-foreground text-sm mt-1">Last updated: {lastUpdated}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={isRefreshing} className="gap-2">
+        <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={isRefreshing} className="gap-2 self-start sm:self-auto">
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           Refresh
         </Button>
@@ -176,9 +176,9 @@ export default function AdminDashboard() {
       {/* Recent Messages */}
       <Card className="border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Recent Contact Messages</CardTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-2 self-start sm:self-auto">
               <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => handleExport("json")} disabled={messages.length === 0}>
                 <Download className="h-3 w-3" /> JSON
               </Button>
