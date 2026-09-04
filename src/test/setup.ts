@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
+import '../i18n'
 
 // Mock matchMedia for components that might use it (like Recharts)
 Object.defineProperty(window, 'matchMedia', {
