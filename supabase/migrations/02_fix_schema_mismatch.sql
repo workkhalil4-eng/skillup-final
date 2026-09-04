@@ -58,6 +58,7 @@ ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS duration TEXT;
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS level TEXT DEFAULT 'All Levels';
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE public.courses ALTER COLUMN instructor_id DROP NOT NULL;
 
 -- 5. Adapt and Create Enrollments Table
 CREATE TABLE IF NOT EXISTS public.enrollments (
