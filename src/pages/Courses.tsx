@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Star, Filter, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +20,7 @@ interface Course {
 }
 
 export default function Courses() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,23 +88,24 @@ export default function Courses() {
   return (
     <div className="container py-12 md:py-24">
       <div className="mb-12 md:text-center max-w-3xl md:mx-auto">
-        <h1 className="text-5xl md:text-6xl font-serif font-bold mb-6">Explore Courses</h1>
-        <p className="text-xl text-muted-foreground">Find the perfect program to advance your skills. Taught by industry experts.</p>
+        <h1 className="text-5xl md:text-6xl font-serif font-bold mb-6">{t("courses.title")}</h1>
+        <p className="text-xl text-muted-foreground">{t("courses.subtitle")}</p>
       </div>
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-12">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder="Search courses, descriptions, or instructors..." 
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <Input
+            placeholder={t("courses.searchPlaceholder")}
             className="pl-10 h-12 rounded-full bg-card"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label={t("courses.searchPlaceholder")}
           />
         </div>
-        <Button variant="outline" className="h-12 rounded-full px-6 gap-2">
-          <Filter className="h-4 w-4" /> Filters
+        <Button variant="outline" className="h-12 rounded-full px-6 gap-2" aria-label={t("courses.filters")}>
+          <Filter className="h-4 w-4" aria-hidden="true" /> {t("courses.filters")}
         </Button>
       </div>
 
@@ -123,7 +126,7 @@ export default function Courses() {
             <Link key={course.id} to={`/courses/${course.id}`} className="block group">
               <Card className="h-full overflow-hidden border-border bg-card/50 transition-colors group-hover:bg-card">
                 <div className="h-48 relative flex items-start p-4">
-                  <img src={course.image_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={course.image_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
                   <div className="relative z-10 bg-background/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
                     {course.level}
@@ -131,16 +134,15 @@ export default function Courses() {
                 </div>
                 <CardContent className="p-6 flex flex-col flex-1 h-[calc(100%-12rem)]">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                    <Star className="h-4 w-4 fill-primary text-primary" />
+                    <Star className="h-4 w-4 fill-primary text-primary" aria-hidden="true" />
                     <span className="font-medium text-foreground">4.8</span>
-                    <span>(New)</span>
+                    <span>({t("courses.new")})</span>
                   </div>
                   <h3 className="font-serif text-2xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">{course.title}</h3>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2 flex-1">{course.description}</p>
-                  
                   <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
                     <div className="flex items-center gap-3">
-                      <img src={course.instructor_avatar} alt={course.instructor_name} className="h-8 w-8 rounded-full object-cover border border-border" />
+                      <img src={course.instructor_avatar} alt={course.instructor_name} className="h-8 w-8 rounded-full object-cover border border-border" loading="lazy" />
                       <span className="text-sm font-medium">{course.instructor_name}</span>
                     </div>
                     <div className="font-bold text-lg">${course.price}</div>
@@ -152,8 +154,8 @@ export default function Courses() {
         </div>
       ) : (
         <div className="text-center py-24 bg-card/30 rounded-3xl border border-border">
-          <h3 className="text-2xl font-serif font-bold mb-2">No courses found</h3>
-          <p className="text-muted-foreground">Try adjusting your search query or check back later.</p>
+          <h3 className="text-2xl font-serif font-bold mb-2">{t("courses.noResults")}</h3>
+          <p className="text-muted-foreground">{t("courses.noResultsHint")}</p>
         </div>
       )}
     </div>

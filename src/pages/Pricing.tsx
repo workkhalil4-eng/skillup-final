@@ -80,9 +80,9 @@ export default function Pricing() {
                 {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
               </div>
               <ul className="space-y-4">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                     <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}

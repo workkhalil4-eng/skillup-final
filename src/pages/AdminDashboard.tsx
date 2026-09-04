@@ -60,19 +60,24 @@ export default function AdminDashboard() {
   }, []);
 
   const handleExport = (format: "json" | "csv") => {
-    if (format === "json") {
-      const blob = new Blob([JSON.stringify(messages, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = "messages.json"; a.click();
-    } else {
-      const BOM = "\uFEFF";
-      const headers = "Name,Email,Subject,Message,Time";
-      const rows = messages.map(m =>
-        `"${m.name}","${m.email}","${m.subject}","${m.message.replace(/"/g, '""')}","${new Date(m.created_at).toLocaleString()}"`
-      );
-      const blob = new Blob([BOM + [headers, ...rows].join("\n")], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = "messages.csv"; a.click();
+    let url: string | null = null;
+    try {
+      if (format === "json") {
+        const blob = new Blob([JSON.stringify(messages, null, 2)], { type: "application/json" });
+        url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "messages.json"; a.click();
+      } else {
+        const BOM = "\uFEFF";
+        const headers = "Name,Email,Subject,Message,Time";
+        const rows = messages.map(m =>
+          `"${m.name}","${m.email}","${m.subject}","${m.message.replace(/"/g, '""')}","${new Date(m.created_at).toLocaleString()}"`
+        );
+        const blob = new Blob([BOM + [headers, ...rows].join("\n")], { type: "text/csv;charset=utf-8;" });
+        url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "messages.csv"; a.click();
+      }
+    } finally {
+      if (url) setTimeout(() => URL.revokeObjectURL(url!), 1000);
     }
   };
 

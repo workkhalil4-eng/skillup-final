@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -20,16 +21,14 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export default function Auth({ type = "login" }: { type?: "login" | "register" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [emailConfirmSent, setEmailConfirmSent] = useState(false);
   const { session } = useAuth();
+  const { t } = useTranslation();
   const isLogin = type === "login";
 
   const form = useForm<AuthFormValues>({
     resolver: zodResolver(authSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      fullName: "",
-    },
+    defaultValues: { email: "", password: "", fullName: "" },
   });
 
   if (session) {
@@ -39,7 +38,6 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
   const onSubmit = async (data: AuthFormValues) => {
     setIsLoading(true);
     setAuthError(null);
-    
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -48,36 +46,52 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
-          options: {
-            data: {
-              full_name: data.fullName,
-            }
-          }
+          options: { data: { full_name: data.fullName } },
         });
         if (error) throw error;
+        // If email confirmation required (session is null after signup)
+        if (!signUpData.session) {
+          setEmailConfirmSent(true);
+          return;
+        }
       }
     } catch (error: any) {
-      console.error(error.message);
       setAuthError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Email confirmation sent screen
+  if (emailConfirmSent) {
+    return (
+      <div className="container flex h-[calc(100vh-80px)] w-screen flex-col items-center justify-center">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px] text-center">
+          <div className="text-6xl mb-2">📧</div>
+          <h1 className="text-3xl font-serif font-bold tracking-tight">
+            {t("auth.confirmEmailTitle")}
+          </h1>
+          <p className="text-muted-foreground">{t("auth.confirmEmailHint")}</p>
+          <Button variant="outline" asChild>
+            <Link to="/login">{t("nav.login")}</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container flex h-[calc(100vh-80px)] w-screen flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-3xl font-serif font-bold tracking-tight">
-            {isLogin ? "Welcome back" : "Create an account"}
+            {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isLogin 
-              ? "Enter your email to sign in to your account" 
-              : "Enter your details below to create your account"}
+            {isLogin ? t("auth.signInHint") : t("auth.signUpHint")}
           </p>
         </div>
 
@@ -85,18 +99,18 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {authError && (
-                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md" role="alert">
                   {authError}
                 </div>
               )}
-              
+
               {!isLogin && (
                 <FormField
                   control={form.control}
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>{t("auth.fullName")}</FormLabel>
                       <FormControl>
                         <Input placeholder="John Doe" {...field} />
                       </FormControl>
@@ -111,9 +125,16 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("auth.email")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" type="email" autoCapitalize="none" autoCorrect="off" disabled={isLoading} {...field} />
+                      <Input
+                        placeholder="name@example.com"
+                        type="email"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        disabled={isLoading}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -125,7 +146,7 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("auth.password")}</FormLabel>
                     <FormControl>
                       <Input type="password" disabled={isLoading} {...field} />
                     </FormControl>
@@ -136,9 +157,9 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && (
-                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" />
                 )}
-                {isLogin ? "Sign In" : "Sign Up"}
+                {isLogin ? t("auth.signIn") : t("auth.signUp")}
               </Button>
             </form>
           </Form>
@@ -147,16 +168,16 @@ export default function Auth({ type = "login" }: { type?: "login" | "register" }
         <p className="px-8 text-center text-sm text-muted-foreground">
           {isLogin ? (
             <>
-              Don't have an account?{" "}
+              {t("auth.noAccount")}{" "}
               <Link to="/register" className="underline underline-offset-4 hover:text-primary">
-                Sign up
+                {t("auth.signUp")}
               </Link>
             </>
           ) : (
             <>
-              Already have an account?{" "}
+              {t("auth.hasAccount")}{" "}
               <Link to="/login" className="underline underline-offset-4 hover:text-primary">
-                Sign in
+                {t("auth.signIn")}
               </Link>
             </>
           )}
