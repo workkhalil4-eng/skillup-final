@@ -1,5 +1,5 @@
 -- Migration: 02_fix_schema_mismatch.sql
--- Description: Adapts existing tables, renames published to is_published, adds missing columns, and configures complete RLS and functions.
+-- Description: Adapts legacy tables (courses, enrollments), aligns column names, and sets up RLS and functions safely.
 
 -- 1. Create User Roles Enum safely
 DO $$ BEGIN
@@ -59,15 +59,34 @@ ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS level TEXT DEFAULT 'All Leve
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS image_url TEXT;
 
--- 5. Enrollments Table
+-- 5. Adapt and Create Enrollments Table
 CREATE TABLE IF NOT EXISTS public.enrollments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    student_id UUID REFERENCES public.profiles(id) NOT NULL,
-    course_id UUID REFERENCES public.courses(id) NOT NULL,
+    student_id UUID REFERENCES public.profiles(id),
+    course_id UUID REFERENCES public.courses(id),
     progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
-    enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    UNIQUE(student_id, course_id)
+    enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Adapt legacy column names in enrollments if needed
+DO $$ 
+BEGIN
+  -- Rename user_id -> student_id if it exists
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='enrollments' AND column_name='user_id') 
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='enrollments' AND column_name='student_id') THEN
+    ALTER TABLE public.enrollments RENAME COLUMN user_id TO student_id;
+  ELSE
+    ALTER TABLE public.enrollments ADD COLUMN IF NOT EXISTS student_id UUID REFERENCES public.profiles(id);
+  END IF;
+
+  -- Rename created_at -> enrolled_at if it exists
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='enrollments' AND column_name='created_at') 
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='enrollments' AND column_name='enrolled_at') THEN
+    ALTER TABLE public.enrollments RENAME COLUMN created_at TO enrolled_at;
+  ELSE
+    ALTER TABLE public.enrollments ADD COLUMN IF NOT EXISTS enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
+  END IF;
+END $$;
 
 -- 6. Messages (Contact Form) Table
 CREATE TABLE IF NOT EXISTS public.messages (
